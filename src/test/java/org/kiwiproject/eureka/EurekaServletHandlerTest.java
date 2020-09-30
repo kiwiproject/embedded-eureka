@@ -68,7 +68,7 @@ class EurekaServletHandlerTest {
     }
 
     @AfterEach
-    void resetMocks() {
+    void resetHandlerAndMocks() {
         reset(eurekaServer);
         handler.registrationWaitRetries.clear();
         handler.heartbeatRetries.clear();
