@@ -1,0 +1,16 @@
+language: java
+jdk:
+  - openjdk11
+
+git:
+  depth: false
+
+addons:
+  sonarcloud:
+    organization: "kiwiproject"
+    token:
+      secure: "N4h5rIJBZCcfs5b2+Xwp2VsWDbju8bccTeQpqihLL2B8bzgx3xcpT6MQhHfbn6kyKqUftYqQ67HifD3kbiCfGQ7775TcVW9ScfFAicuw0AjbQ6AZgFnAeFujmXhwtejO2umZYZkcUh43xqOHHklxOAUJsgmorR1t2QdlDolJW5v++jLacDFs0jti8goQkRZ6rs6g6+h9ALndx/97RLkLPKSWHZgRG8G+wT3btavRIk65DADPsumpGyvKUOoaDHR0Vt2ih7kXWGEtUzC/TET+AjOeqv+SeybCvwTSzhIjjNbqK8iGivSiVhXOSrKViLlvvnpHpKRJ6VxKKjMum2h6Mjpc8aA6+YhQVmDLYl6PavHp+ZLjPQLlwQfrakq8+nuqtdTKUD2YwArXIjPLoKR0LCuXk/9gyrw7e/DsPNF25nIJm4GAEkX6nacb8ItcC7mQchzyiHaj9X9H8BuWA13yxPF3zzyfPEhgfOGjvcloBHPQnVvMmtWfGlw5pVzigLYkh7YowGiKNWP6Y2KJfqumXMsyMjpVHwc0YA3vKSP7CDdPVUVXYGLjQ+HTOIu7BWm2jVXFzoxqVOIgR+LJ/jvHVmKH941jLZPSIspymWWDHK1Eots+ZGQZlQC68lBDrsLJAuWBFFtxxzGwZ0Xp6wpcW4QiU2dDk2LQiF12IargQY4="
+
+script:
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - mvn -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml clean org.jacoco:jacoco-maven-plugin:prepare-agent package org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=kiwiproject_embedded-eureka
