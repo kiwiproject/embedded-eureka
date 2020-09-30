@@ -1,24 +1,49 @@
 package org.kiwiproject.eureka;
 
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.kiwiproject.jaxrs.KiwiResponses.notSuccessful;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class EurekaServer {
 
-    @Getter
+    @VisibleForTesting
+    @Getter(AccessLevel.PACKAGE)
     private final ConcurrentMap<String, Application> applications = new ConcurrentHashMap<>();
+
+    @VisibleForTesting
+    @Getter(AccessLevel.PACKAGE)
+    private final ConcurrentMap<String, InstanceInfo> heartbeatApps = new ConcurrentHashMap<>();
+
+    @VisibleForTesting
+    @Getter(AccessLevel.PACKAGE)
+    private final List<String> heartbeatHistory = Collections.synchronizedList(new ArrayList<>());
+
+    @VisibleForTesting
+    @Getter(AccessLevel.PACKAGE)
+    private final AtomicInteger heartbeatCount = new AtomicInteger();
+
+    @VisibleForTesting
+    @Getter(AccessLevel.PACKAGE)
+    private final AtomicInteger heartbeatFailureCount = new AtomicInteger();
 
     public Optional<InstanceInfo> getInstance(String appId, String instanceId) {
         var application = MapUtils.getObject(applications, appId);
@@ -54,11 +79,36 @@ public class EurekaServer {
      */
     public void cleanupApps() {
         applications.clear();
+        heartbeatApps.clear();
+        heartbeatHistory.clear();
+        heartbeatCount.set(0);
+        heartbeatFailureCount.set(0);
+    }
 
-        // TODO: These will be uncommented as I implement the rest of the functionality
-//        heartbeatApps.clear();
-//        heartbeatHistory.clear();
-//        heartbeatCount.set(0);
-//        heartbeatFailureCount.set(0);
+    public void updateHeartbeatFor(String appName, String hostName, int statusCode, InstanceInfo.InstanceStatus instanceStatus) {
+        var heartbeatAppKey = heartbeatAppKey(appName, hostName);
+        heartbeatHistory.add(heartbeatAppHistoryKey(heartbeatAppKey, statusCode));
+        heartbeatCount.incrementAndGet();
+
+        if (notSuccessful(statusCode)) {
+            var newFailureCount = heartbeatFailureCount.incrementAndGet();
+            LOG.debug("Return status {} on heartbeat for app {}, instance {} ; new failure count: {}",
+                    statusCode, appName, hostName, newFailureCount);
+        } else {
+            var builder = InstanceInfo.Builder.newBuilder()
+                    .setAppName(appName)
+                    .setHostName(hostName)
+                    .setStatus(instanceStatus);
+            var updatedInstanceInfo = builder.build();
+            heartbeatApps.put(heartbeatAppKey, updatedInstanceInfo);
+        }
+    }
+
+    private static String heartbeatAppKey(String app, String instance) {
+        return app + "|" + instance;
+    }
+
+    private String heartbeatAppHistoryKey(String appKey, int statusCode) {
+        return appKey + "|" + statusCode + "|" + ISO_DATE_TIME.format(LocalDateTime.now());
     }
 }

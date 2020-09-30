@@ -1,11 +1,14 @@
 package org.kiwiproject.eureka;
 
+import static javax.ws.rs.client.Entity.json;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertInternalServerErrorResponse;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertNotFoundResponse;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertOkResponse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -225,9 +228,188 @@ class EurekaServletHandlerTest {
 
             var applicationMap = response.readEntity(new GenericType<Map<String, Map<String, Object>>>(){});
 
-            System.out.println(applicationMap);
             assertThat(applicationMap).isNotNull();
             assertThat((List<Map<String, Object>>)applicationMap.get("applications").get("application")).hasSize(1);
+        }
+    }
+
+    @Nested
+    class PutHeartbeatsAndStatus {
+
+        @Test
+        void shouldReturn404IfInstanceCannotBeFoundForHeartbeat() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.empty());
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertNotFoundResponse(response);
+        }
+
+        @Test
+        void shouldReturn404IfInstanceCannotBeFoundForStatus() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.empty());
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}/status")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertNotFoundResponse(response);
+        }
+
+        @Test
+        void shouldUpdateHeartbeatAndReturn200() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("localhost")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .build();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.of(instance));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertOkResponse(response);
+            verify(eurekaServer).updateHeartbeatFor(APP_NAME.toUpperCase(), "localhost", 200, InstanceInfo.InstanceStatus.UP);
+        }
+
+        @Test
+        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("FailHeartbeat-2")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .setMetadata(Map.of("FailHeartbeatResponseCode", "500"))
+                    .build();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.of(instance));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertInternalServerErrorResponse(response);
+            verify(eurekaServer).updateHeartbeatFor(APP_NAME.toUpperCase(), "FailHeartbeat-2", 500, InstanceInfo.InstanceStatus.UP);
+        }
+
+        @Test
+        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("FailHeartbeat-2")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .setMetadata(Map.of("FailHeartbeatResponseCode", "500"))
+                    .build();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId))
+                    .thenReturn(Optional.of(instance))
+                    .thenReturn(Optional.of(instance))
+                    .thenReturn(Optional.of(instance));
+
+
+            for (var i = 0; i < 2; i++) {
+                var response = client.target(server.getURI())
+                        .path("/eureka/v2/apps/{appId}/{instanceId}")
+                        .resolveTemplate("appId", APP_NAME)
+                        .resolveTemplate("instanceId", instanceId)
+                        .request(MediaType.APPLICATION_JSON_TYPE)
+                        .put(json(""));
+
+                assertInternalServerErrorResponse(response);
+            }
+
+            verify(eurekaServer, times(2)).updateHeartbeatFor(APP_NAME.toUpperCase(), "FailHeartbeat-2", 500, InstanceInfo.InstanceStatus.UP);
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertOkResponse(response);
+            verify(eurekaServer).updateHeartbeatFor(APP_NAME.toUpperCase(), "FailHeartbeat-2", 200, InstanceInfo.InstanceStatus.UP);
+        }
+
+        @Test
+        void shouldReturn200ForStatusOnSuccess() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("localhost")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .build();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.of(instance));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}/status")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .queryParam("value", "DOWN")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertOkResponse(response);
+        }
+
+        @Test
+        void shouldReturn500ForStatusOnTriggeredFailure() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("FailStatusChange")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .build();
+
+            when(eurekaServer.getInstance(APP_NAME, instanceId)).thenReturn(Optional.of(instance));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}/status")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .queryParam("value", "DOWN")
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .put(json(""));
+
+            assertInternalServerErrorResponse(response);
         }
     }
 }
