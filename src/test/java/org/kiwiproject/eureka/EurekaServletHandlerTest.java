@@ -3,12 +3,15 @@ package org.kiwiproject.eureka;
 import static javax.ws.rs.client.Entity.json;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertInternalServerErrorResponse;
+import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertNoContentResponse;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertNotFoundResponse;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertOkResponse;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -65,9 +68,11 @@ class EurekaServletHandlerTest {
     }
 
     @AfterEach
-    void resetMocks() {
+    void resetHandlerAndMocks() {
         reset(eurekaServer);
         handler.registrationWaitRetries.clear();
+        handler.heartbeatRetries.clear();
+        handler.registrationRetries.clear();
     }
 
     @AfterAll
@@ -294,7 +299,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure() {
+        void shouldUpdateHeartbeatAndReturn500_OnTriggeredFailure() {
             var instanceId = UUIDs.randomUUIDString();
 
             var instance = InstanceInfo.Builder.newBuilder()
@@ -320,7 +325,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
+        void shouldUpdateHeartbeatAndReturn500_OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
             var instanceId = UUIDs.randomUUIDString();
 
             var instance = InstanceInfo.Builder.newBuilder()
@@ -410,6 +415,95 @@ class EurekaServletHandlerTest {
                     .put(json(""));
 
             assertInternalServerErrorResponse(response);
+        }
+    }
+
+    @Nested
+    class PostRegistration {
+
+        @Test
+        void shouldRegisterApplicationAndReturn204() {
+            var postBody = Map.of(
+                    "instance", Map.of(
+                            "hostName", "localhost",
+                            "homePageUrl", "http://localhost",
+                            "statusPageUrl", "http://localhost/status",
+                            "healthCheckUrl", "http://localhost/healthcheck",
+                            "status", "STARTING",
+                            "port", Map.of("$", 8080),
+                            "securePort", Map.of("$", 8081),
+                            "vipAddress", APP_NAME
+                    )
+            );
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .post(json(postBody));
+
+            assertNoContentResponse(response);
+            verify(eurekaServer).registerApplication(isA(InstanceInfo.class));
+        }
+
+        @Test
+        void shouldAttemptToRegisterAndReturn500_OnTriggeredFailure() {
+            var postBody = Map.of(
+                    "instance", Map.of(
+                            "hostName", "localhost",
+                            "homePageUrl", "http://localhost",
+                            "statusPageUrl", "http://localhost/status",
+                            "healthCheckUrl", "http://localhost/healthcheck",
+                            "status", "STARTING",
+                            "port", Map.of("$", 8080),
+                            "securePort", Map.of("$", 8081),
+                            "vipAddress", "RegisterUseResponseStatusCode-500"
+                    )
+            );
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .post(json(postBody));
+
+            assertInternalServerErrorResponse(response);
+            verifyNoInteractions(eurekaServer);
+        }
+
+        @Test
+        void shouldAttemptToRegisterAndReturn500_OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
+            var postBody = Map.of(
+                    "instance", Map.of(
+                            "hostName", "localhost",
+                            "homePageUrl", "http://localhost",
+                            "statusPageUrl", "http://localhost/status",
+                            "healthCheckUrl", "http://localhost/healthcheck",
+                            "status", "STARTING",
+                            "port", Map.of("$", 8080),
+                            "securePort", Map.of("$", 8081),
+                            "vipAddress", "FailRegistrationFirstNTimes-2"
+                    )
+            );
+
+            for (var i = 0; i < 2; i++) {
+                var response = client.target(server.getURI())
+                        .path("/eureka/v2/apps/{appId}")
+                        .resolveTemplate("appId", APP_NAME)
+                        .request(MediaType.APPLICATION_JSON_TYPE)
+                        .post(json(postBody));
+
+                assertInternalServerErrorResponse(response);
+            }
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .post(json(postBody));
+
+            assertNoContentResponse(response);
+            verify(eurekaServer).registerApplication(isA(InstanceInfo.class));
         }
     }
 }

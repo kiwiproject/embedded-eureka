@@ -111,4 +111,14 @@ public class EurekaServer {
     private String heartbeatAppHistoryKey(String appKey, int statusCode) {
         return appKey + "|" + statusCode + "|" + ISO_DATE_TIME.format(LocalDateTime.now());
     }
+
+    public void registerApplication(InstanceInfo instance) {
+        applications.computeIfAbsent(instance.getAppName(), appName -> newApplication(appName, instance));
+    }
+
+    private Application newApplication(String appName, InstanceInfo instance) {
+        var app = new Application(appName);
+        app.addInstance(instance);
+        return app;
+    }
 }
