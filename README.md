@@ -8,6 +8,8 @@
 
 An embeddable Eureka server to be used for testing. THIS SHOULD NOT BE USED IN PRODUCTION!!!
 
+This version is based off of the v2 endpoints in Eureka.
+
 #### How to use it
 * Add the Maven dependency (available in Maven Central)
 
@@ -21,4 +23,21 @@ An embeddable Eureka server to be used for testing. THIS SHOULD NOT BE USED IN P
 
 #### Junit 5
 
-TODO: Write this
+The extension can be added to a test class as follows:
+
+```java
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.kiwiproject.eureka.junit.EurekaServerExtension;
+
+class ServiceTest {
+    @RegisterExtension
+    private static EurekaServerExtension EUREKA = new EurekaServerExtension();
+    
+    // Test code goes here
+}
+```
+
+You can then get the port from the extension to pass into your Eureka client.
+
+#### Customizing responses
+Please review the javadocs of the `EurekaServletHandler` for descriptions on values that can be passed in to the various calls to trigger error conditions.
