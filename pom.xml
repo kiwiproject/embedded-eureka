@@ -1,0 +1,254 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.kiwiproject</groupId>
+    <artifactId>kiwi-parent</artifactId>
+    <version>0.1.0</version>
+  </parent>
+
+  <artifactId>embedded-eureka</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>
+    Provides an embeddable Eureka server for use in testing.
+  </description>
+  <url>https://github.com/kiwiproject/embedded-eureka</url>
+  <inceptionYear>2020</inceptionYear>
+
+  <scm>
+    <connection>scm:git:https://github.com/kiwiproject/embedded-eureka.git</connection>
+    <developerConnection>scm:git:git@github.com:kiwiproject/embedded-eureka.git</developerConnection>
+    <url>https://github.com/kiwiproject/embedded-eureka</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <properties>
+    <!-- Versions for required dependencies -->
+    <commons-collections.version>4.4</commons-collections.version>
+    <commons-io.version>2.7</commons-io.version>
+    <dropwizard.version>2.0.12</dropwizard.version>
+    <eureka.version>1.9.25</eureka.version>
+    <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
+    <jersey.version>2.31</jersey.version>
+    <kiwi.version>0.10.0</kiwi.version>
+    <kiwi-test.version>0.5.0</kiwi-test.version>
+    <metrics-servlet.version>4.1.11</metrics-servlet.version>
+
+    <!-- Versions for provided dependencies -->
+    <lombok.version>1.18.12</lombok.version>
+
+    <!-- Versions for optional dependencies -->
+
+    <!-- Versions for test dependencies -->
+    <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
+    <jaxb-api.version>2.3.1</jaxb-api.version>
+
+    <!-- Versions for plugins -->
+
+    <!-- Build properties -->
+  </properties>
+
+  <dependencies>
+
+    <!-- Required dependencies -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commons-collections.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-core</artifactId>
+      <version>${dropwizard.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jakarta.annotation</groupId>
+          <artifactId>jakarta.annotation-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hibernate.validator</groupId>
+          <artifactId>hibernate-validator</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-jackson</artifactId>
+      <version>${dropwizard.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.netflix.eureka</groupId>
+      <artifactId>eureka-client</artifactId>
+      <version>${eureka.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.netflix.archaius</groupId>
+          <artifactId>archaius-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey.contribs</groupId>
+          <artifactId>jersey-apache-client4</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.netflix.servo</groupId>
+          <artifactId>servo-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml</groupId>
+          <artifactId>classmate</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
+      <version>${jersey.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.javassist</groupId>
+          <artifactId>javassist</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>kiwi</artifactId>
+      <version>${kiwi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.kiwiproject</groupId>
+      <artifactId>kiwi-test</artifactId>
+      <version>${kiwi-test.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-servlets</artifactId>
+      <version>${metrics-servlet.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta.annotation-api.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>${jaxb-api.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+</project>
