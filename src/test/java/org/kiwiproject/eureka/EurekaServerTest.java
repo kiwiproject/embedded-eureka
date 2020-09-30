@@ -1,6 +1,7 @@
 package org.kiwiproject.eureka;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -95,11 +96,50 @@ class EurekaServerTest {
         @Test
         void shouldMakeSureInternalMapsAreCleared() {
             server.getApplications().put("test", new Application("test"));
+            server.getHeartbeatApps().put("test", InstanceInfo.Builder.newBuilder().setAppName("test").build());
+            server.getHeartbeatCount().set(5);
+            server.getHeartbeatFailureCount().set(5);
+            server.getHeartbeatHistory().add("test");
 
             server.cleanupApps();
 
             assertThat(server.getApplications()).isEmpty();
+            assertThat(server.getHeartbeatApps()).isEmpty();
+            assertThat(server.getHeartbeatHistory()).isEmpty();
+            assertThat(server.getHeartbeatCount()).hasValue(0);
+            assertThat(server.getHeartbeatFailureCount()).hasValue(0);
         }
 
+    }
+    
+    @Nested
+    class UpdateHeartbeatFor {
+        
+        @Test
+        void shouldUpdateHeartbeatFailureCountOnErrorStatus() {
+
+            server.updateHeartbeatFor("test-service", "localhost", 500, InstanceInfo.InstanceStatus.UP);
+
+            assertThat(server.getHeartbeatHistory()).hasSize(1);
+            assertThat(server.getHeartbeatHistory().get(0)).startsWith("test-service|localhost|500|");
+            assertThat(server.getHeartbeatCount()).hasValue(1);
+            assertThat(server.getHeartbeatFailureCount()).hasValue(1);
+            assertThat(server.getHeartbeatApps()).isEmpty();
+        }
+
+        @Test
+        void shouldUpdateHeartbeatAppsOnSuccess() {
+            server.updateHeartbeatFor("test-service", "localhost", 200, InstanceInfo.InstanceStatus.UP);
+
+            assertThat(server.getHeartbeatHistory()).hasSize(1);
+            assertThat(server.getHeartbeatHistory().get(0)).startsWith("test-service|localhost|200|");
+            assertThat(server.getHeartbeatCount()).hasValue(1);
+            assertThat(server.getHeartbeatFailureCount()).hasValue(0);
+            assertThat(server.getHeartbeatApps()).contains(entry("test-service|localhost", InstanceInfo.Builder.newBuilder()
+                    .setAppName("test-service")
+                    .setHostName("localhost")
+                    .setStatus(InstanceInfo.InstanceStatus.UP)
+                    .build()));
+        }
     }
 }

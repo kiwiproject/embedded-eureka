@@ -1,8 +1,10 @@
 package org.kiwiproject.eureka;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.EurekaJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,9 @@ public class EurekaServletHandler extends HttpServlet {
 
     @VisibleForTesting
     final ConcurrentHashMap<String, Pair<Integer, Integer>> registrationWaitRetries = new ConcurrentHashMap<>();
+
+    @VisibleForTesting
+    private final ConcurrentHashMap<String, Pair<Integer, Integer>> heartbeatRetries = new ConcurrentHashMap<>();
 
     private final EurekaServer eurekaServer;
 
@@ -217,5 +222,80 @@ public class EurekaServletHandler extends HttpServlet {
         } else {
             throw new IllegalArgumentException(acceptHeader + " is not allowed (use application/json)");
         }
+    }
+
+    /**
+     * Handles PUT requests for either heartbeats or status updates.
+     * <p>
+     * To perform a heartbeat just do a PUT to /apps/{appId}/{instanceId}. You can cause heartbeats to fail with a
+     * 404 by setting the hostName to "FailHeartbeat-N" where N is the number of times to fail. You can also specify
+     * the response code by adding the response code you want under the key "FailHeartbeatResponseCode" in the
+     * registration candidate's metadata map.
+     * <p>
+     * To do a status update, PUT to /apps/{appId}/{instanceId}/status?value=new-status. You can also cause a status
+     * change to fail by setting the candidate instanceId/hostName to the literal string "FailStatusChange".
+     */
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var handlers = new HashMap<String, RequestHandler>();
+        handlers.put(APP_BASE_PATH, getAppsPutHandler());
+        handleRequest((Request) req, (Response) resp, handlers);
+    }
+
+    private RequestHandler getAppsPutHandler() {
+        return (pathInfo, request, response) -> {
+            var pathParts = splitPathInfo(pathInfo);
+            var appId = pathParts[1];
+            var instanceId = pathParts[2];
+            var instance = eurekaServer.getInstance(appId, instanceId).orElse(null);
+
+            if (isNull(instance)) {
+                sendNotFoundResponseForMissingInstanceInfo(request, response, appId, instanceId);
+                return REQUEST_HANDLED;
+            }
+
+            var isStatusChangeRequest = pathParts.length > 3 && "status".equals(pathParts[3]);
+
+            int statusCode;
+            if (isStatusChangeRequest) {
+                statusCode = handleStatusChangeRequest(instance, request.getParameter("value"));
+            } else {
+                statusCode = handleHeartBeatRequest(instance);
+            }
+
+            var content = generateResponse("", getAcceptContentType(request));
+            sendResponseWithContent(request, response, statusCode, content);
+            return REQUEST_HANDLED;
+        };
+    }
+
+    private int handleHeartBeatRequest(InstanceInfo existingInstance) {
+        var appName = existingInstance.getAppName();
+        var hostName = existingInstance.getHostName();
+        var metadata = existingInstance.getMetadata();
+        var errorStatusCode = HttpServletResponse.SC_NOT_FOUND;
+
+        if (metadata.containsKey("FailHeartbeatResponseCode")) {
+            errorStatusCode = Integer.parseInt(metadata.get("FailHeartbeatResponseCode"));
+        }
+
+        var statusCode = getResponseCodeWithPossibleRetryFailure(heartbeatRetries, appName,
+                hostName, "FailHeartbeat-", HttpServletResponse.SC_OK, errorStatusCode);
+
+        eurekaServer.updateHeartbeatFor(appName, hostName, statusCode, existingInstance.getStatus());
+
+        LOG.debug("Returning {} on heartbeat request for app {}, instance {}", statusCode, appName, hostName);
+        return statusCode;
+    }
+
+
+
+    int handleStatusChangeRequest(InstanceInfo existingInstance, String newStatus) {
+        if ("FailStatusChange".equals(existingInstance.getHostName())) {
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        }
+
+        existingInstance.setStatus(InstanceInfo.InstanceStatus.valueOf(newStatus));
+        return HttpServletResponse.SC_OK;
     }
 }
