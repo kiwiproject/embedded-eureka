@@ -42,10 +42,10 @@ public class EurekaServletHandler extends HttpServlet {
     final ConcurrentHashMap<String, Pair<Integer, Integer>> registrationWaitRetries = new ConcurrentHashMap<>();
 
     @VisibleForTesting
-    private final ConcurrentHashMap<String, Pair<Integer, Integer>> heartbeatRetries = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, Pair<Integer, Integer>> heartbeatRetries = new ConcurrentHashMap<>();
 
     @VisibleForTesting
-    private final ConcurrentHashMap<String, Pair<Integer, Integer>> registrationRetries = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, Pair<Integer, Integer>> registrationRetries = new ConcurrentHashMap<>();
 
     private final EurekaServer eurekaServer;
 
