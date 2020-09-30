@@ -297,7 +297,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure() {
+        void shouldUpdateHeartbeatAndReturn500_OnTriggeredFailure() {
             var instanceId = UUIDs.randomUUIDString();
 
             var instance = InstanceInfo.Builder.newBuilder()
@@ -323,7 +323,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldUpdateHeartbeatAndReturn500OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
+        void shouldUpdateHeartbeatAndReturn500_OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
             var instanceId = UUIDs.randomUUIDString();
 
             var instance = InstanceInfo.Builder.newBuilder()
@@ -445,7 +445,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldAttemptToRegisterAndReturn500OnTriggeredFailure() {
+        void shouldAttemptToRegisterAndReturn500_OnTriggeredFailure() {
             var postBody = Map.of(
                     "instance", Map.of(
                             "hostName", "localhost",
@@ -470,7 +470,7 @@ class EurekaServletHandlerTest {
         }
 
         @Test
-        void shouldAttemptToRegisterAndReturn500OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
+        void shouldAttemptToRegisterAndReturn500_OnTriggeredFailure_ThenSuccessAfterTriggeredNumber() {
             var postBody = Map.of(
                     "instance", Map.of(
                             "hostName", "localhost",
