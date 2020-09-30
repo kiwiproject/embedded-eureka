@@ -2,12 +2,14 @@ package org.kiwiproject.eureka;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.kiwiproject.collect.KiwiLists.first;
 import static org.kiwiproject.test.constants.KiwiTestConstants.JSON_HELPER;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.converters.EurekaJacksonCodec;
+import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -15,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -400,6 +403,42 @@ public class EurekaServletHandler extends HttpServlet {
         }
 
         return responseStatusCode;
+    }
+
+    /**
+     * Handle DELETE requests to /apps/{appId}/{instanceId} to unregister an app.
+     * <p>
+     * You can cause a 500 error by setting the hostName/instanceId of the candidate to "FailUnregister".
+     */
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        var handlers = new HashMap<String, RequestHandler>();
+
+        handlers.put(APP_BASE_PATH, (pathInfo, request, response) -> {
+            var pathParts = pathInfo.split("/");
+            var appName = pathParts[2];
+            var hostName = pathParts[3];
+
+            var app = eurekaServer.getApplicationByName(appName);
+
+            var statusCode = app.map(application -> unregisterApp(application, appName, hostName))
+                    .orElse(HttpServletResponse.SC_NOT_FOUND);
+
+            var content = generateResponse("", getAcceptContentType(request));
+            sendResponseWithContent(request, response, statusCode, content);
+            return REQUEST_HANDLED;
+        });
+
+        handleRequest((Request) req, (Response) resp, handlers);
+    }
+
+    private int unregisterApp(Application application, String appName, String hostName) {
+        if ("FailUnregister".equals(first(application.getInstances()).getHostName())) {
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        }
+
+        eurekaServer.unregisterApplication(application, appName, hostName);
+        return HttpServletResponse.SC_OK;
     }
 
 }

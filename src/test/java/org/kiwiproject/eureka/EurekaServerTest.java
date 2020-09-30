@@ -184,4 +184,62 @@ class EurekaServerTest {
             assertThat(server.getApplications().get("VALID-APP").getByInstanceId("nope")).isNull();
         }
     }
+
+    @Nested
+    class UnRegisterApplication {
+
+        @Test
+        void shouldRemoveInstanceOnlyIfMoreThanOneExists() {
+            var instanceToRemove = InstanceInfo.Builder.newBuilder().setAppName("TEST-SERVICE").setHostName("localhost").build();
+            var instanceToKeep = InstanceInfo.Builder.newBuilder().setAppName("TEST-SERVICE").setHostName("127.0.0.1").build();
+
+            var application = new Application("TEST-SERVICE", List.of(
+                    instanceToRemove,
+                    instanceToKeep
+            ));
+
+            server.getApplications().put("TEST-SERVICE", application);
+            server.getHeartbeatApps().put("TEST-SERVICE|localhost", instanceToRemove);
+            server.getHeartbeatApps().put("TEST-SERVICE|127.0.0.1", instanceToKeep);
+
+            server.unregisterApplication(application, "TEST-SERVICE", "localhost");
+
+            assertThat(server.getApplications()).containsKey("TEST-SERVICE");
+            assertThat(server.getApplications().get("TEST-SERVICE").getInstances()).hasSize(1);
+            assertThat(server.getHeartbeatApps()).containsOnly(entry("TEST-SERVICE|127.0.0.1", instanceToKeep));
+        }
+
+        @Test
+        void shouldRemoveWholeApplicationIfAllInstancesAreRemoved() {
+            var instanceToRemove = InstanceInfo.Builder.newBuilder().setAppName("TEST-SERVICE").setHostName("localhost").build();
+
+            var application = new Application("TEST-SERVICE", List.of(
+                    instanceToRemove
+            ));
+
+            server.getApplications().put("TEST-SERVICE", application);
+            server.getHeartbeatApps().put("TEST-SERVICE|localhost", instanceToRemove);
+
+            server.unregisterApplication(application, "TEST-SERVICE", "localhost");
+
+            assertThat(server.getApplications()).isEmpty();
+            assertThat(server.getHeartbeatApps()).isEmpty();
+        }
+    }
+
+    @Nested
+    class GetApplicationByName {
+
+        @Test
+        void shouldReturnApplicationIfFound() {
+            server.getApplications().put("TEST", new Application());
+
+            assertThat(server.getApplicationByName("TEST")).isPresent();
+        }
+
+        @Test
+        void shouldReturnOptionalEmptyIfNotFound() {
+            assertThat(server.getApplicationByName("TEST")).isEmpty();
+        }
+    }
 }
