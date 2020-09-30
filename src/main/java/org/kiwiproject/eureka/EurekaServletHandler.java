@@ -2,12 +2,15 @@ package org.kiwiproject.eureka;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static org.kiwiproject.test.constants.KiwiTestConstants.JSON_HELPER;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.converters.EurekaJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -16,6 +19,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URL;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +43,9 @@ public class EurekaServletHandler extends HttpServlet {
 
     @VisibleForTesting
     private final ConcurrentHashMap<String, Pair<Integer, Integer>> heartbeatRetries = new ConcurrentHashMap<>();
+
+    @VisibleForTesting
+    private final ConcurrentHashMap<String, Pair<Integer, Integer>> registrationRetries = new ConcurrentHashMap<>();
 
     private final EurekaServer eurekaServer;
 
@@ -164,7 +173,6 @@ public class EurekaServletHandler extends HttpServlet {
                 } else {
                     LOG.debug("Reached num times to fail {} for retry key {}, returning success code {}",
                             numTimesToFail, retryKey, successResponseCode);
-                    responseStatusCode = HttpServletResponse.SC_OK;
                     retries.remove(retryKey);
                 }
             } else { // first attempt, setup in map
@@ -298,4 +306,100 @@ public class EurekaServletHandler extends HttpServlet {
         existingInstance.setStatus(InstanceInfo.InstanceStatus.valueOf(newStatus));
         return HttpServletResponse.SC_OK;
     }
+
+    /**
+     * Handle registration requests via POSTs to /apps.
+     * <p>
+     * You can cause two different failure types. By setting the candidate's VIP address to
+     * "RegisterUseResponseStatusCode-status-code" (example: RegisterUseResponseStatusCode-500) you can force the
+     * mock server to return the specified response code. Or, by setting the VIP address to
+     * "FailRegistrationFirstNTimes-numberOfTimes" (example FailRegistrationFirstNTimes-3) you can cause registration
+     * to fail with a 500 error the first N times (3 times in the example).
+     */
+    @SuppressWarnings({"unchecked"})
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        var handlers = new HashMap<String, RequestHandler>();
+
+        handlers.put(APP_BASE_PATH, (pathInfo, request, response) -> {
+            var pathParts = pathInfo.split("/");
+            var appName = pathParts[2];
+
+            var input = IOUtils.toString(request.getInputStream(), req.getCharacterEncoding());
+            LOG.debug("Received POST data: {}", input);
+
+            var body = (Map<String, Object>) JSON_HELPER.toMap(input).get("instance");
+            var hostName = (String) body.get("hostName");
+            var homePageUrl = new URL((String) body.get("homePageUrl"));
+            var statusPageUrl = new URL((String) body.get("statusPageUrl"));
+            var healthCheckPageUrl = new URL((String) body.get("healthCheckUrl"));
+
+            var builder = InstanceInfo.Builder.newBuilder()
+                    .setAppName(appName)
+                    .setHostName(hostName)
+                    .setInstanceId(hostName) // instanceId will simply be the hostName
+                    .setIPAddr((String) body.get("ipAddr"))
+                    .setVIPAddress((String) body.get("vipAddress"))
+                    .setSecureVIPAddress((String) body.get("vipAddress")) // for now secure VIP is same as VIP address
+                    .setStatus(InstanceInfo.InstanceStatus.valueOf((String) body.get("status")))
+                    .setPort((Integer) ((Map<String, Object>) body.get("port")).get("$"))
+                    .setSecurePort((Integer) ((Map<String, Object>) body.get("securePort")).get("$"))
+                    .setMetadata((Map<String, String>) body.get("metadata"))
+                    .setIsCoordinatingDiscoveryServer(false)
+                    .setActionType(InstanceInfo.ActionType.ADDED)
+                    .setOverriddenStatus(InstanceInfo.InstanceStatus.UNKNOWN)
+                    .setHomePageUrl(homePageUrl.getPath(), homePageUrl.toString())
+                    .setStatusPageUrl(statusPageUrl.getPath(), statusPageUrl.toString())
+                    .setHealthCheckUrls(healthCheckPageUrl.getPath(), healthCheckPageUrl.toString(), healthCheckPageUrl.toString());
+
+            var now = Instant.now();
+            var registrationTimestamp = now.minus(30, ChronoUnit.MINUTES).toEpochMilli();
+            builder.setLeaseInfo(LeaseInfo.Builder.newBuilder()
+                    .setRenewalIntervalInSecs(30)
+                    .setDurationInSecs(90)
+                    .setRegistrationTimestamp(registrationTimestamp)
+                    .setRenewalTimestamp(now.minus(1, ChronoUnit.SECONDS).toEpochMilli())
+                    .setEvictionTimestamp(0)
+                    .setServiceUpTimestamp(registrationTimestamp + 1)
+                    .build());
+
+            var instanceInfo = builder.build();
+
+            var responseStatusCode = getResponseStatusCodeForRegistrationAttempt(instanceInfo);
+
+            // Only a 204 indicates valid registration, so only add this app if status code is 204
+            if (HttpServletResponse.SC_NO_CONTENT == responseStatusCode) {
+                eurekaServer.registerApplication(instanceInfo);
+            }
+
+            var content = generateResponse(null, getAcceptContentType(request));
+            sendResponseWithContent(request, response, responseStatusCode, content);
+            return REQUEST_HANDLED;
+        });
+
+        handleRequest((Request) req, (Response) resp, handlers);
+    }
+
+    private int getResponseStatusCodeForRegistrationAttempt(InstanceInfo instanceInfo) {
+        var responseStatusCode = HttpServletResponse.SC_NO_CONTENT;
+
+        // Check if we need to inject a fault based on specific trigger values in InstanceInfo
+        var vipAddress = instanceInfo.getVIPAddress();
+
+        if (vipAddress.startsWith("RegisterUseResponseStatusCode-")) {
+            LOG.debug("Got trigger for sending back specific response code from VIP address {}", vipAddress);
+            responseStatusCode = getResponseCodeFromTriggerValue(vipAddress);
+            LOG.debug("Received VIP address [{}], so sending response code {}", vipAddress, responseStatusCode);
+        }
+
+        if (vipAddress.startsWith("FailRegistrationFirstNTimes-")) {
+            LOG.debug("Got trigger for failing registration first N times from VIP address {}", vipAddress);
+            var appName = instanceInfo.getAppName();
+            responseStatusCode = getResponseCodeWithPossibleRetryFailure(registrationRetries,
+                    appName, vipAddress, "FailRegistrationFirstNTimes-", 204, 500);
+        }
+
+        return responseStatusCode;
+    }
+
 }

@@ -142,4 +142,46 @@ class EurekaServerTest {
                     .build()));
         }
     }
+
+    @Nested
+    class RegisterApplication {
+
+        @Test
+        void shouldAddApplicationIfDoesNotExist() {
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName("valid-app")
+                    .setVIPAddress("some-vip-address")
+                    .setInstanceId("valid-instance")
+                    .build();
+
+            server.registerApplication(instance);
+
+            assertThat(server.getApplications()).containsKey("VALID-APP");
+            assertThat(server.getApplications().get("VALID-APP").getByInstanceId("valid-instance")).isNotNull();
+        }
+
+        @Test
+        void shouldNotAddApplicationIfExists() {
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName("valid-app")
+                    .setVIPAddress("some-vip-address")
+                    .setInstanceId("valid-instance")
+                    .build();
+
+            var application = new Application("VALID-APP", List.of(instance));
+            server.getApplications().put("VALID-APP", application);
+
+            var newInstanceDifferentInstanceId = InstanceInfo.Builder.newBuilder()
+                    .setAppName("valid-app")
+                    .setVIPAddress("some-vip-address")
+                    .setInstanceId("nope")
+                    .build();
+
+            server.registerApplication(newInstanceDifferentInstanceId);
+
+            assertThat(server.getApplications()).containsKey("VALID-APP");
+            assertThat(server.getApplications().get("VALID-APP").getByInstanceId("valid-instance")).isNotNull();
+            assertThat(server.getApplications().get("VALID-APP").getByInstanceId("nope")).isNull();
+        }
+    }
 }
