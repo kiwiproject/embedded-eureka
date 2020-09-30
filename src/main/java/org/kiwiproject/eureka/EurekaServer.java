@@ -121,4 +121,16 @@ public class EurekaServer {
         app.addInstance(instance);
         return app;
     }
+
+    public Optional<Application> getApplicationByName(String appName) {
+        return Optional.ofNullable(applications.get(appName));
+    }
+
+    public void unregisterApplication(Application application, String appName, String hostName) {
+        application.removeInstance(InstanceInfo.Builder.newBuilder().setAppName(appName).setHostName(hostName).build());
+        if (application.getInstances().isEmpty()) {
+            applications.remove(appName);
+        }
+        heartbeatApps.remove(heartbeatAppKey(appName, hostName));
+    }
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -505,5 +506,81 @@ class EurekaServletHandlerTest {
             assertNoContentResponse(response);
             verify(eurekaServer).registerApplication(isA(InstanceInfo.class));
         }
+    }
+
+    @Nested
+    class DeleteUnregisterApplication {
+
+        @Test
+        void shouldReturn404WhenApplicationNotFound() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            when(eurekaServer.getApplicationByName(APP_NAME)).thenReturn(Optional.empty());
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .delete();
+
+            assertNotFoundResponse(response);
+
+            verify(eurekaServer).getApplicationByName(APP_NAME);
+            verifyNoMoreInteractions(eurekaServer);
+        }
+
+        @Test
+        void shouldDeleteApplicationWhenFound() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .build();
+
+            var app = new Application(APP_NAME, List.of(instance));
+            when(eurekaServer.getApplicationByName(APP_NAME)).thenReturn(Optional.of(app));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .delete();
+
+            assertOkResponse(response);
+
+            verify(eurekaServer).unregisterApplication(app, APP_NAME, instanceId);
+        }
+
+        @Test
+        void shouldReturn500WhenFailUnregisterIsUsed() {
+            var instanceId = UUIDs.randomUUIDString();
+
+            var instance = InstanceInfo.Builder.newBuilder()
+                    .setAppName(APP_NAME)
+                    .setVIPAddress(APP_NAME)
+                    .setInstanceId(instanceId)
+                    .setHostName("FailUnregister")
+                    .build();
+
+            var app = new Application(APP_NAME, List.of(instance));
+            when(eurekaServer.getApplicationByName(APP_NAME)).thenReturn(Optional.of(app));
+
+            var response = client.target(server.getURI())
+                    .path("/eureka/v2/apps/{appId}/{instanceId}")
+                    .resolveTemplate("appId", APP_NAME)
+                    .resolveTemplate("instanceId", instanceId)
+                    .request(MediaType.APPLICATION_JSON_TYPE)
+                    .delete();
+
+            assertInternalServerErrorResponse(response);
+
+            verify(eurekaServer).getApplicationByName(APP_NAME);
+            verifyNoMoreInteractions(eurekaServer);
+        }
+
     }
 }
