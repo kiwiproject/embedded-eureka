@@ -5,10 +5,8 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.kiwiproject.jaxrs.KiwiResponses.notSuccessful;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -23,26 +21,13 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
+@Getter
 public class EurekaServer {
 
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
     private final ConcurrentMap<String, Application> applications = new ConcurrentHashMap<>();
-
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
     private final ConcurrentMap<String, InstanceInfo> heartbeatApps = new ConcurrentHashMap<>();
-
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
     private final List<String> heartbeatHistory = Collections.synchronizedList(new ArrayList<>());
-
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
     private final AtomicInteger heartbeatCount = new AtomicInteger();
-
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
     private final AtomicInteger heartbeatFailureCount = new AtomicInteger();
 
     public Optional<InstanceInfo> getInstance(String appId, String instanceId) {
