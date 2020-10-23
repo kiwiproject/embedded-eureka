@@ -20,6 +20,7 @@ import com.netflix.discovery.shared.Application;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,7 +66,9 @@ class EurekaServletHandlerTest {
 
     @BeforeEach
     void setUpClient() {
-        client = ClientBuilder.newClient();
+        client = ClientBuilder.newClient()
+                .property(ClientProperties.CONNECT_TIMEOUT, 1_000)
+                .property(ClientProperties.READ_TIMEOUT, 5_000);
     }
 
     @AfterEach
