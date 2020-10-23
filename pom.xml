@@ -31,14 +31,13 @@
         <commons-io.version>2.7</commons-io.version>
         <dropwizard.version>2.0.14</dropwizard.version>
         <eureka.version>1.9.25</eureka.version>
-        <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
-        <jersey.version>2.31</jersey.version>
-        <kiwi.version>0.12.0</kiwi.version>
-        <kiwi-test.version>0.7.0</kiwi-test.version>
-        <metrics-servlet.version>4.1.12.1</metrics-servlet.version>
+        <hibernate-validator.version>6.1.6.Final</hibernate-validator.version>
+        <jersey.version>2.32</jersey.version>
+        <kiwi.version>0.13.0</kiwi.version>
+        <kiwi-test.version>0.8.0</kiwi-test.version>
+        <metrics-servlet.version>4.1.14</metrics-servlet.version>
 
         <!-- Versions for provided dependencies -->
-        <lombok.version>1.18.12</lombok.version>
 
         <!-- Versions for optional dependencies -->
 
@@ -72,24 +71,8 @@
             <version>${dropwizard.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.hibernate.validator</groupId>
                     <artifactId>hibernate-validator</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>jakarta.xml.bind</groupId>
