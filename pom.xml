@@ -29,7 +29,7 @@
         <!-- Versions for required dependencies -->
         <commons-collections.version>4.4</commons-collections.version>
         <commons-io.version>2.7</commons-io.version>
-        <dropwizard.version>2.0.13</dropwizard.version>
+        <dropwizard.version>2.0.14</dropwizard.version>
         <eureka.version>1.9.25</eureka.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
         <jersey.version>2.31</jersey.version>
