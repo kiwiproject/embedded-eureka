@@ -33,8 +33,8 @@
         <eureka.version>1.9.25</eureka.version>
         <hibernate-validator.version>6.1.6.Final</hibernate-validator.version>
         <jersey.version>2.32</jersey.version>
-        <kiwi.version>0.14.0</kiwi.version>
-        <kiwi-test.version>0.9.0</kiwi-test.version>
+        <kiwi.version>0.15.0</kiwi.version>
+        <kiwi-test.version>0.10.0</kiwi-test.version>
         <metrics-jetty9.version>4.1.14</metrics-jetty9.version>
         <metrics-servlet.version>4.1.14</metrics-servlet.version>
 
