@@ -1,6 +1,5 @@
 ### Embedded Eureka
 [![Build](https://github.com/kiwiproject/embedded-eureka/workflows/build/badge.svg)](https://github.com/kiwiproject/embedded-eureka/actions?query=workflow%3Abuild)
-[![Build Status](https://travis-ci.com/kiwiproject/embedded-eureka.svg?branch=master)](https://travis-ci.com/kiwiproject/embedded-eureka)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_embedded-eureka&metric=alert_status)](https://sonarcloud.io/dashboard?id=kiwiproject_embedded-eureka)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_embedded-eureka&metric=coverage)](https://sonarcloud.io/dashboard?id=kiwiproject_embedded-eureka)
 [![javadoc](https://javadoc.io/badge2/org.kiwiproject/embedded-eureka/javadoc.svg)](https://javadoc.io/doc/org.kiwiproject/embedded-eureka)
