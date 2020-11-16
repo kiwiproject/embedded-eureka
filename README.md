@@ -1,4 +1,5 @@
 ### Embedded Eureka
+[![Build](https://github.com/kiwiproject/embedded-eureka/workflows/build/badge.svg)](https://github.com/kiwiproject/embedded-eureka/actions?query=workflow%3Abuild)
 [![Build Status](https://travis-ci.com/kiwiproject/embedded-eureka.svg?branch=master)](https://travis-ci.com/kiwiproject/embedded-eureka)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_embedded-eureka&metric=alert_status)](https://sonarcloud.io/dashboard?id=kiwiproject_embedded-eureka)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_embedded-eureka&metric=coverage)](https://sonarcloud.io/dashboard?id=kiwiproject_embedded-eureka)
@@ -17,7 +18,7 @@ This version is based off of the v2 endpoints in Eureka.
 <dependency>
     <groupId>org.kiwiproject</groupId>
     <artifactId>embedded-eureka</artifactId>
-    <version>0.1.0</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 
