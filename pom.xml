@@ -49,6 +49,11 @@
         <!-- Versions for plugins -->
 
         <!-- Build properties -->
+
+        <!-- Sonar properties -->
+        <sonar.projectKey>kiwiproject_embedded-eureka</sonar.projectKey>
+        <sonar.organization>kiwiproject</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
