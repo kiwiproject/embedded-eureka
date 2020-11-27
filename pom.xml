@@ -29,14 +29,14 @@
         <!-- Versions for required dependencies -->
         <commons-collections.version>4.4</commons-collections.version>
         <commons-io.version>2.7</commons-io.version>
-        <dropwizard.version>2.0.15</dropwizard.version>
+        <dropwizard.version>2.0.16</dropwizard.version>
         <eureka.version>1.9.25</eureka.version>
         <hibernate-validator.version>6.1.6.Final</hibernate-validator.version>
         <jersey.version>2.32</jersey.version>
-        <kiwi.version>0.16.0</kiwi.version>
-        <kiwi-test.version>0.11.0</kiwi-test.version>
-        <metrics-jetty9.version>4.1.14</metrics-jetty9.version>
-        <metrics-servlet.version>4.1.14</metrics-servlet.version>
+        <kiwi.version>0.17.0</kiwi.version>
+        <kiwi-test.version>0.12.0</kiwi-test.version>
+        <metrics-jetty9.version>4.1.16</metrics-jetty9.version>
+        <metrics-servlet.version>4.1.16</metrics-servlet.version>
 
         <!-- Versions for provided dependencies -->
 
