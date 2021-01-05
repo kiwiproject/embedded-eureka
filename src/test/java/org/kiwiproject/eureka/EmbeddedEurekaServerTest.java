@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 @DisplayName("EmbeddedEurekaServer")
+@SetSystemProperty(key = "eureka.numberRegistrySyncRetries", value = "0")
 class EmbeddedEurekaServerTest {
 
     @Test
