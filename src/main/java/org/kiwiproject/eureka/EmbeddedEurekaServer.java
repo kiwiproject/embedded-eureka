@@ -60,7 +60,7 @@ public class EmbeddedEurekaServer {
         try {
             eurekaServer.start();
         } catch (Exception e) {
-            LOG.error("Error while starting down Eureka", e);
+            LOG.error("Error starting Eureka", e);
             throw new IllegalStateException("Eureka has not been started", e);
         }
     }
