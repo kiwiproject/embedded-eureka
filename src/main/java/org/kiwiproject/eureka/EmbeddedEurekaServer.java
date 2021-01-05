@@ -9,13 +9,20 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.kiwiproject.io.KiwiPaths;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Creates, configures, starts and stops an embedded Jetty server running a Eureka Server.
+ * <p>
+ * If using this class outside of {@link org.kiwiproject.eureka.junit.EurekaServerExtension} then you may want to
+ * set the eureka.numberRegistrySyncRetries to zero in the System properties. This will allow the server to spin up
+ * quickly an not try to connect to other non-existent Eureka servers.
+ * See https://github.com/Netflix/eureka/issues/42#issuecomment-75614903 for dialog on this.
  */
 @Slf4j
 public class EmbeddedEurekaServer {
 
-    private static final long IDLE_TIMEOUT = 3_600_000L;
+    private static final long IDLE_TIMEOUT = TimeUnit.HOURS.toMillis(1L);
 
     private final Server eurekaServer;
     private final ServerConnector connector;
@@ -33,9 +40,6 @@ public class EmbeddedEurekaServer {
      * @param port the port to run Jetty on.
      */
     public EmbeddedEurekaServer(int port) {
-        // This is needed so Eureka starts up very quickly
-        System.setProperty("eureka.numberRegistrySyncRetries", "0");
-
         eurekaServer = new Server();
         connector = new ServerConnector(eurekaServer);
 

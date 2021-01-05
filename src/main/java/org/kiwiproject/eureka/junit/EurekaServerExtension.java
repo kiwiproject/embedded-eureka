@@ -34,6 +34,10 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
     public void beforeAll(ExtensionContext context) {
         LOG.trace("Creating mock Eureka server");
 
+        // This is needed so Eureka starts up very quickly
+        // See: https://github.com/Netflix/eureka/issues/42#issuecomment-75614903
+        System.setProperty("eureka.numberRegistrySyncRetries", "0");
+
         embeddedEurekaServer = new EmbeddedEurekaServer(port);
         embeddedEurekaServer.start();
 
@@ -47,6 +51,9 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
     public void afterAll(ExtensionContext context) {
         LOG.info("Stopping mock Eureka server (running at http://localhost:{})", port);
         embeddedEurekaServer.stop();
+
+        // Clearing the property that was set before the server was started.
+        System.clearProperty("eureka.numberRegistrySyncRetries");
     }
 
 }
