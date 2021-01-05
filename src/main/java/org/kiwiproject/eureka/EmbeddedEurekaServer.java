@@ -77,7 +77,7 @@ public class EmbeddedEurekaServer {
             eurekaServer.stop();
             eurekaServer.join();
         } catch (Exception e) {
-            LOG.error("Error while shutting down Eureka", e);
+            LOG.error("Error shutting down Eureka", e);
         }
     }
 
