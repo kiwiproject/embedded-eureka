@@ -44,35 +44,35 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
     @Override
     public void beforeAll(ExtensionContext context) {
         var displayName = context.getDisplayName();
-        LOG.debug("[beforeAll: {}] Initialize testing server.", displayName);
+        LOG.trace("[beforeAll: {}] Initialize testing server.", displayName);
 
         if (nonNull(eurekaServer) && eurekaServer.isStarted()) {
-            LOG.debug("[beforeAll: {}] Skip initialization since server is STARTED. Maybe we are in a @Nested test class?",
+            LOG.trace("[beforeAll: {}] Skip initialization since server is STARTED. Maybe we are in a @Nested test class?",
                     displayName);
             return;
         } else if (nonNull(eurekaServer)  && eurekaServer.isStopped()) {
-            LOG.debug("[beforeAll: {}] Re-initialize since server is STOPPED. There is probably more than one @Nested test class.",
+            LOG.trace("[beforeAll: {}] Re-initialize since server is STOPPED. There is probably more than one @Nested test class.",
                     displayName);
 
             EurekaTestHelpers.resetStatsMonitor();
         }
 
-        LOG.debug("[beforeAll: {}] Starting Eureka Mock Server", displayName);
+        LOG.trace("[beforeAll: {}] Starting Eureka Mock Server", displayName);
         eurekaServer = new EmbeddedEurekaServer(basePath);
         eurekaServer.start();
 
         port = eurekaServer.getEurekaPort();
 
-        LOG.info("[beforeAll: {}] Started Eureka Mock Server at http://localhost:{}{}", displayName, port, basePath);
+        LOG.trace("[beforeAll: {}] Started Eureka Mock Server at http://localhost:{}{}", displayName, port, basePath);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
         var displayName = context.getDisplayName();
 
-        LOG.info("[afterAll: {}] Stopping Eureka Mock Server (running at http://localhost:{}{})", displayName, port, basePath);
+        LOG.trace("[afterAll: {}] Stopping Eureka Mock Server (running at http://localhost:{}{})", displayName, port, basePath);
         eurekaServer.stop();
-        LOG.info("[afterAll: {}] Eureka Mock Server stopped!", displayName);
+        LOG.trace("[afterAll: {}] Eureka Mock Server stopped!", displayName);
 
     }
 
