@@ -1,18 +1,14 @@
 package org.kiwiproject.eureka.junit;
 
-import com.google.common.annotations.VisibleForTesting;
-import lombok.AccessLevel;
+import static java.util.Objects.nonNull;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.kiwiproject.eureka.EurekaServer;
-import org.kiwiproject.eureka.EurekaServletHandler;
+import org.kiwiproject.eureka.EmbeddedEurekaServer;
+import org.kiwiproject.eureka.EurekaTestHelpers;
 
 /**
  * JUnit Jupiter extension that starts a local Eureka testing server before any test has run, and stops the server
@@ -25,50 +21,59 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
      * The base path at which the testing Eureka server will respond to requests.
      */
     @SuppressWarnings("java:S1075")
-    public static final String EUREKA_API_BASE_PATH = "/eureka/v2/";
-
-    @VisibleForTesting
-    @Getter(AccessLevel.PACKAGE)
-    private Server server;
+    public static final String EUREKA_API_BASE_PATH = "/eureka/";
 
     @Getter
     private int port;
 
     @Getter
-    private EurekaServer eurekaServer;
+    private EmbeddedEurekaServer eurekaServer;
+
+    @Getter
+    private final String basePath;
 
     public EurekaServerExtension() {
+        this(EUREKA_API_BASE_PATH);
+    }
+
+    public EurekaServerExtension(String basePath) {
         LOG.trace("New EurekaServerExtension instance created");
+        this.basePath = basePath;
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
-        LOG.trace("Creating mock Eureka server");
+    public void beforeAll(ExtensionContext context) {
+        var displayName = context.getDisplayName();
+        LOG.trace("[beforeAll: {}] Initialize testing server.", displayName);
 
-        createServer();
-        server.start();
-        port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
+        if (nonNull(eurekaServer) && eurekaServer.isStarted()) {
+            LOG.trace("[beforeAll: {}] Skip initialization since server is STARTED. Maybe we are in a @Nested test class?",
+                    displayName);
+            return;
+        } else if (nonNull(eurekaServer)  && eurekaServer.isStopped()) {
+            LOG.trace("[beforeAll: {}] Re-initialize since server is STOPPED. There is probably more than one @Nested test class.",
+                    displayName);
 
-        LOG.info("Started eureka mock server at {}", server.getURI());
-    }
+            EurekaTestHelpers.resetStatsMonitor();
+        }
 
-    private void createServer() {
-        eurekaServer = new EurekaServer();
+        LOG.trace("[beforeAll: {}] Starting Eureka Mock Server", displayName);
+        eurekaServer = new EmbeddedEurekaServer(basePath);
+        eurekaServer.start();
 
-        var eurekaHandler = new EurekaServletHandler(eurekaServer);
-        var holder = new ServletHolder("eurekaHandler", eurekaHandler);
+        port = eurekaServer.getEurekaPort();
 
-        var handler = new ServletHandler();
-        handler.addServletWithMapping(holder, EUREKA_API_BASE_PATH + "*");
-
-        server = new Server(0);
-        server.setHandler(handler);
+        LOG.trace("[beforeAll: {}] Started Eureka Mock Server at http://localhost:{}{}", displayName, port, basePath);
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
-        LOG.info("Stopping mock Eureka server (running at {})", server.getURI());
-        server.stop();
+    public void afterAll(ExtensionContext context) {
+        var displayName = context.getDisplayName();
+
+        LOG.trace("[afterAll: {}] Stopping Eureka Mock Server (running at http://localhost:{}{})", displayName, port, basePath);
+        eurekaServer.stop();
+        LOG.trace("[afterAll: {}] Eureka Mock Server stopped!", displayName);
+
     }
 
 }
