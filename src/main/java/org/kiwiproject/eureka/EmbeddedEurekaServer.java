@@ -1,15 +1,29 @@
 package org.kiwiproject.eureka;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.kiwiproject.io.KiwiPaths.pathFromResourceName;
 
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.MyDataCenterInstanceConfig;
+import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
+import com.netflix.discovery.DefaultEurekaClientConfig;
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.Jersey2DiscoveryClientOptionalArgs;
+import com.netflix.discovery.provider.DiscoveryJerseyProvider;
+import com.netflix.discovery.shared.transport.jersey2.Jersey2TransportClientFactories;
+import com.netflix.eureka.resources.EurekaServerContextBinder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.kiwiproject.io.KiwiPaths;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 
+import javax.servlet.DispatcherType;
+import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,10 +41,10 @@ public class EmbeddedEurekaServer {
     private static final String DEFAULT_CONTEXT_PATH = "/";
 
     private final Server eurekaServer;
-    private final ServerConnector connector;
+    private ServerConnector connector;
 
     @Getter
-    private final EmbeddedEurekaBootstrap registry;
+    private EmbeddedEurekaBootstrap registry;
 
     public EmbeddedEurekaServer() {
         this(DEFAULT_CONTEXT_PATH);
@@ -41,6 +55,21 @@ public class EmbeddedEurekaServer {
      */
     public EmbeddedEurekaServer(String basePath) {
         eurekaServer = new Server();
+        setupConnector();
+
+        var webContext = new WebAppContext();
+        webContext.setContextPath(basePath);
+        webContext.setResourceBase(pathFromResourceName("webapp").toString());
+
+        buildEurekaBootstrap();
+        webContext.addEventListener(registry);
+
+        configureApi(webContext);
+
+        eurekaServer.setHandler(webContext);
+    }
+
+    private void setupConnector() {
         connector = new ServerConnector(eurekaServer);
 
         // Set timeout option to make debugging easier.
@@ -48,17 +77,29 @@ public class EmbeddedEurekaServer {
 
         connector.setPort(0);
         eurekaServer.setConnectors(new Connector[] { connector });
+    }
 
-        var webContext = new WebAppContext();
-        webContext.setContextPath(basePath);
+    private void buildEurekaBootstrap() {
+        var instanceConfig = new MyDataCenterInstanceConfig("embeddedEureka");
+        var instanceInfo = new EurekaConfigBasedInstanceInfoProvider(instanceConfig).get();
 
-        var webXml = KiwiPaths.pathFromResourceName("webapp");
-        webContext.setResourceBase(webXml.toString());
+        var applicationInfoManager = new ApplicationInfoManager(instanceConfig, instanceInfo);
+        var args = new Jersey2DiscoveryClientOptionalArgs();
+        args.setTransportClientFactories(new Jersey2TransportClientFactories());
+        var discoveryClient = new DiscoveryClient(applicationInfoManager, new DefaultEurekaClientConfig(), args);
 
-        registry = new EmbeddedEurekaBootstrap();
-        webContext.addEventListener(registry);
+        registry = new EmbeddedEurekaBootstrap(discoveryClient);
+    }
 
-        eurekaServer.setHandler(webContext);
+    private void configureApi(WebAppContext webContext) {
+        var resourceConfig = new ResourceConfig();
+        resourceConfig.packages("com.netflix");
+        resourceConfig.register(new EurekaServerContextBinder());
+        resourceConfig.register(DiscoveryJerseyProvider.class);
+
+        var resourceServletContext = new ServletContainer(resourceConfig);
+        var filterHolder = new FilterHolder(resourceServletContext);
+        webContext.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
     /**
@@ -105,5 +146,9 @@ public class EmbeddedEurekaServer {
      */
     public boolean isStarted() {
         return eurekaServer.isStarted();
+    }
+
+    public boolean isStopped() {
+        return eurekaServer.isStopped();
     }
 }

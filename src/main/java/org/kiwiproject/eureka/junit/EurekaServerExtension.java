@@ -56,4 +56,6 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
         eurekaServer.stop();
     }
 
+    // TODO: We may need to implement a beforeEach to run the "hack" found in EurekaTestHelpers
+
 }
