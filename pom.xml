@@ -45,7 +45,6 @@
 
         <!-- Versions for test dependencies -->
         <kiwi-test.version>0.12.0</kiwi-test.version>
-        <powermock.version>2.0.9</powermock.version>
 
         <!-- Versions for plugins -->
 
