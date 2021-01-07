@@ -1,8 +1,6 @@
 package org.kiwiproject.eureka;
 
-import static com.google.common.base.Preconditions.checkState;
-import static org.kiwiproject.io.KiwiPaths.pathFromResourceName;
-
+import com.google.common.io.Resources;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
@@ -59,7 +57,7 @@ public class EmbeddedEurekaServer {
 
         var webContext = new WebAppContext();
         webContext.setContextPath(basePath);
-        webContext.setResourceBase(pathFromResourceName("webapp").toString());
+        webContext.setResourceBase(Resources.getResource("webapp").toString());
 
         buildEurekaBootstrap();
         webContext.addEventListener(registry);
@@ -120,7 +118,10 @@ public class EmbeddedEurekaServer {
      * @throws IllegalStateException when the server is not running.
      */
     public void stop() {
-        checkState(eurekaServer.isStarted(), "Server has not been started. Call start first!");
+        if (eurekaServer.isStopped()) {
+            LOG.warn("Eureka Server has already been stopped, skipping request to stop.");
+            return;
+        }
 
         try {
             eurekaServer.stop();

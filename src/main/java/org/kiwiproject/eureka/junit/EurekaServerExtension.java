@@ -1,11 +1,14 @@
 package org.kiwiproject.eureka.junit;
 
+import static java.util.Objects.nonNull;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.kiwiproject.eureka.EmbeddedEurekaServer;
+import org.kiwiproject.eureka.EurekaTestHelpers;
 
 /**
  * JUnit Jupiter extension that starts a local Eureka testing server before any test has run, and stops the server
@@ -40,22 +43,37 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
 
     @Override
     public void beforeAll(ExtensionContext context) {
-        LOG.trace("Creating mock Eureka server");
+        var displayName = context.getDisplayName();
+        LOG.debug("[beforeAll: {}] Initialize testing server.", displayName);
 
+        if (nonNull(eurekaServer) && eurekaServer.isStarted()) {
+            LOG.debug("[beforeAll: {}] Skip initialization since server is STARTED. Maybe we are in a @Nested test class?",
+                    displayName);
+            return;
+        } else if (nonNull(eurekaServer)  && eurekaServer.isStopped()) {
+            LOG.debug("[beforeAll: {}] Re-initialize since server is STOPPED. There is probably more than one @Nested test class.",
+                    displayName);
+
+            EurekaTestHelpers.resetStatsMonitor();
+        }
+
+        LOG.debug("[beforeAll: {}] Starting Eureka Mock Server", displayName);
         eurekaServer = new EmbeddedEurekaServer(basePath);
         eurekaServer.start();
 
         port = eurekaServer.getEurekaPort();
 
-        LOG.info("Started eureka mock server at http://localhost:{}{}", port, basePath);
+        LOG.info("[beforeAll: {}] Started Eureka Mock Server at http://localhost:{}{}", displayName, port, basePath);
     }
 
     @Override
     public void afterAll(ExtensionContext context) {
-        LOG.info("Stopping mock Eureka server (running at http://localhost:{}{})", port, basePath);
-        eurekaServer.stop();
-    }
+        var displayName = context.getDisplayName();
 
-    // TODO: We may need to implement a beforeEach to run the "hack" found in EurekaTestHelpers
+        LOG.info("[afterAll: {}] Stopping Eureka Mock Server (running at http://localhost:{}{})", displayName, port, basePath);
+        eurekaServer.stop();
+        LOG.info("[afterAll: {}] Eureka Mock Server stopped!", displayName);
+
+    }
 
 }

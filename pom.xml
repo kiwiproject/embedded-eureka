@@ -34,7 +34,7 @@
         <httpclient.version>4.5.3</httpclient.version>
         <jackson.version>2.9.10</jackson.version>
         <jetty.version>9.4.35.v20201120</jetty.version>
-        <jersey.version>2.33</jersey.version>
+        <jersey.version>2.32</jersey.version>
         <kiwi.version>0.17.0</kiwi.version>
         <servo-core.version>0.12.21</servo-core.version>
 
