@@ -43,7 +43,7 @@ public class EurekaTestHelpers {
             // Set value
             field.set(null, poolExecutor);
         } catch (Exception e) {
-            throw new RuntimeException("Problem reseting StatsMonitor#DEFAULT_EXECUTOR", e);
+            throw new RuntimeException("Problem resetting StatsMonitor#DEFAULT_EXECUTOR", e);
         }
     }
 }
