@@ -6,7 +6,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Maven Central](https://img.shields.io/maven-central/v/org.kiwiproject/embedded-eureka)](https://search.maven.org/search?q=g:org.kiwiproject%20a:embedded-eureka)
 
-An embeddable Eureka server to be used for testing. THIS SHOULD NOT BE USED IN PRODUCTION!!!
+An embeddable Eureka server to be used for testing. 
+
+THIS SHOULD NOT BE USED IN PRODUCTION!!!
 
 This version is based off of the v2 endpoints in Eureka.
 
@@ -17,7 +19,7 @@ This version is based off of the v2 endpoints in Eureka.
 <dependency>
     <groupId>org.kiwiproject</groupId>
     <artifactId>embedded-eureka</artifactId>
-    <version>0.4.0</version>
+    <version>[current-version]</version>
 </dependency>
 ```
 
@@ -38,6 +40,3 @@ class ServiceTest {
 ```
 
 You can then get the port from the extension to pass into your Eureka client.
-
-#### Customizing responses
-Please review the javadocs of the `EurekaServletHandler` for descriptions on values that can be passed in to the various calls to trigger error conditions.
