@@ -57,7 +57,7 @@ public class EmbeddedEurekaServer {
 
         var webContext = new WebAppContext();
         webContext.setContextPath(basePath);
-        webContext.setResourceBase(Resources.getResource("webapp").toString());
+        webContext.setResourceBase(getWebappURL());
 
         buildEurekaBootstrap();
         webContext.addEventListener(registry);
@@ -67,6 +67,11 @@ public class EmbeddedEurekaServer {
         eurekaServer.setHandler(webContext);
     }
 
+    @SuppressWarnings("UnstableApiUsage")
+    private String getWebappURL() {
+        return Resources.getResource("webapp").toString();
+    }
+
     private void setupConnector() {
         connector = new ServerConnector(eurekaServer);
 
@@ -74,7 +79,7 @@ public class EmbeddedEurekaServer {
         connector.setIdleTimeout(IDLE_TIMEOUT);
 
         connector.setPort(0);
-        eurekaServer.setConnectors(new Connector[] { connector });
+        eurekaServer.setConnectors(new Connector[]{connector});
     }
 
     private void buildEurekaBootstrap() {
