@@ -32,7 +32,7 @@
         <commons-logging.version>1.2</commons-logging.version>
         <eureka.version>1.10.11</eureka.version>
         <httpclient.version>4.5.3</httpclient.version>
-        <jackson.version>2.9.10</jackson.version>
+        <jackson.version>2.9.10.5</jackson.version>
         <jetty.version>9.4.35.v20201120</jetty.version>
         <jersey.version>2.32</jersey.version>
         <kiwi.version>0.17.0</kiwi.version>
