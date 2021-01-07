@@ -67,7 +67,10 @@ public class EmbeddedEurekaBootstrap extends Jersey2EurekaBootStrap {
      *
      * @return the number of heartbeats sent to Eureka
      * @implNote This requires reflection hacks due to the way Eureka stores the renews and what is visible from
-     * this class.  I don't like it, but it is what it is.
+     * this class.  I don't like it, but it is what it is.  The {@code getNumOfRenewsInLastMin()} method calls
+     * {@code getCount()} on the {@link MeasuredRate} which returns the value from the {@link AtomicLong}
+     * {@code lastBucket}. When renews happen, the increment happens on teh {@link AtomicLong} {@code currentBucket}
+     * field which is not publicly accessible.
      */
     @SuppressWarnings("java:S3011")
     public long getHeartbeatCount() {
