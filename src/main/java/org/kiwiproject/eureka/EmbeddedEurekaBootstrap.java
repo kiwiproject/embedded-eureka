@@ -3,7 +3,6 @@ package org.kiwiproject.eureka;
 import static java.util.Objects.nonNull;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.Jersey2EurekaBootStrap;
@@ -117,21 +116,5 @@ public class EmbeddedEurekaBootstrap extends Jersey2EurekaBootStrap {
                 .build();
 
         serverContext.getRegistry().register(instanceInfo, false);
-    }
-
-    public void reInitialize() {
-        try {
-            serverContext.getRegistry().init(
-                    getPeerEurekaNodes(
-                            serverContext.getRegistry(),
-                            serverContext.getServerConfig(),
-                            new DefaultEurekaClientConfig(),
-                            serverContext.getServerCodecs(),
-                            serverContext.getApplicationInfoManager()
-                    )
-            );
-        } catch (Exception e) {
-            LOG.warn("Unable to re-initialize context", e);
-        }
     }
 }
