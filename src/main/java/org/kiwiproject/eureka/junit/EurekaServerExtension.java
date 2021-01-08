@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.kiwiproject.eureka.EmbeddedEurekaServer;
 import org.kiwiproject.eureka.EurekaTestHelpers;
@@ -15,7 +16,7 @@ import org.kiwiproject.eureka.EurekaTestHelpers;
  * after all tests have (successfully or otherwise) completed.
  */
 @Slf4j
-public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallback {
+public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback {
 
     /**
      * The base path at which the testing Eureka server will respond to requests.
@@ -76,4 +77,9 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
 
     }
 
+    @Override
+    public void beforeEach(ExtensionContext extensionContext) {
+        EurekaTestHelpers.resetStatsMonitor();
+        eurekaServer.getRegistry().reInitialize();
+    }
 }
