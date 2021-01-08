@@ -110,6 +110,7 @@ public class EmbeddedEurekaBootstrap extends Jersey2EurekaBootStrap {
         var instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName(appName)
                 .setInstanceId(instanceId)
+                .setHostName(instanceId)
                 .setVIPAddress(vipAddress)
                 .setStatus(InstanceInfo.InstanceStatus.valueOf(status))
                 .build();

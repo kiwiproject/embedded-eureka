@@ -50,11 +50,9 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
             LOG.trace("[beforeAll: {}] Skip initialization since server is STARTED. Maybe we are in a @Nested test class?",
                     displayName);
             return;
-        } else if (nonNull(eurekaServer)  && eurekaServer.isStopped()) {
+        } else if (nonNull(eurekaServer) && eurekaServer.isStopped()) {
             LOG.trace("[beforeAll: {}] Re-initialize since server is STOPPED. There is probably more than one @Nested test class.",
                     displayName);
-
-            EurekaTestHelpers.resetStatsMonitor();
         }
 
         LOG.trace("[beforeAll: {}] Starting Eureka Mock Server", displayName);
@@ -74,6 +72,8 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
         eurekaServer.stop();
         LOG.trace("[afterAll: {}] Eureka Mock Server stopped!", displayName);
 
+        // Reset static executor inside of Eureka
+        EurekaTestHelpers.resetStatsMonitor();
     }
 
 }
