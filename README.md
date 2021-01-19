@@ -33,7 +33,7 @@ import org.kiwiproject.eureka.junit.EurekaServerExtension;
 
 class ServiceTest {
     @RegisterExtension
-    private static EurekaServerExtension EUREKA = new EurekaServerExtension();
+    static final EurekaServerExtension EUREKA = new EurekaServerExtension();
     
     // Test code goes here
 }
