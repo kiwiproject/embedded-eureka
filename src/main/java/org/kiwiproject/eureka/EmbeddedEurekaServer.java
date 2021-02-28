@@ -50,6 +50,8 @@ public class EmbeddedEurekaServer {
 
     /**
      * Creates a new EmbeddedEurekaServer allowing Jetty to pick an available port.
+     *
+     * @param basePath the context path for the Jetty {@link WebAppContext}
      */
     public EmbeddedEurekaServer(String basePath) {
         eurekaServer = new Server();
