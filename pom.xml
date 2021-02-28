@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>0.8.0</version>
+        <version>0.9.0</version>
     </parent>
 
     <artifactId>embedded-eureka</artifactId>
@@ -35,7 +35,7 @@
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
         <jetty.version>9.4.36.v20210114</jetty.version>
         <jersey.version>2.33</jersey.version>
-        <kiwi.version>0.19.0</kiwi.version>
+        <kiwi.version>0.20.0</kiwi.version>
         <servo-core.version>0.12.21</servo-core.version>
 
         <!-- Versions for provided dependencies -->
@@ -44,7 +44,7 @@
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
-        <kiwi-test.version>0.14.0</kiwi-test.version>
+        <kiwi-test.version>0.15.0</kiwi-test.version>
 
         <!-- Versions for plugins -->
 
