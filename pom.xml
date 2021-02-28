@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>embedded-eureka</artifactId>
-    <version>0.11.0-SNAPSHOT</version>
+    <version>0.11.0</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -22,7 +22,7 @@
         <connection>scm:git:https://github.com/kiwiproject/embedded-eureka.git</connection>
         <developerConnection>scm:git:git@github.com:kiwiproject/embedded-eureka.git</developerConnection>
         <url>https://github.com/kiwiproject/embedded-eureka</url>
-        <tag>HEAD</tag>
+        <tag>v0.11.0</tag>
     </scm>
 
     <properties>
