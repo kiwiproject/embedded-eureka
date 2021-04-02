@@ -17,7 +17,7 @@ class EmbeddedEurekaBootstrapTest {
 
     @AfterEach
     void cleanupEureka() {
-        EUREKA.getEurekaServer().getRegistry().cleanupApps();
+        EUREKA.getEurekaServer().getRegistry().clearRegisteredApps();
     }
 
     @Nested

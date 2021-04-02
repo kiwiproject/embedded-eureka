@@ -28,7 +28,7 @@ public class EmbeddedEurekaBootstrap extends Jersey2EurekaBootStrap {
     /**
      * Cleans out all the registered applications inside of Eureka.
      */
-    public void cleanupApps() {
+    public void clearRegisteredApps() {
         LOG.info("Clearing registry");
         serverContext.getRegistry().clearRegistry();
     }
