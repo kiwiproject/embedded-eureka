@@ -97,7 +97,7 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
     /**
      * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code registeredApplications()}.
      */
-    public List<Application> registeredApplications() {
+    public List<Application> getRegisteredApplications() {
         return eurekaServer.getRegistry().registeredApplications();
     }
 

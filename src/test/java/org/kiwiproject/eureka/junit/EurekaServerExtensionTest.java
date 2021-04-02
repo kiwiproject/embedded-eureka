@@ -107,7 +107,7 @@ class EurekaServerExtensionTest {
                         .isEqualTo(server.getRegistry().getRegisteredApplication("FOO"));
 
                 // Verify get all registered works
-                assertThat(extension.registeredApplications()).hasSameSizeAs(server.getRegistry().registeredApplications());
+                assertThat(extension.getRegisteredApplications()).hasSameSizeAs(server.getRegistry().registeredApplications());
 
                 // Verify is registered works
                 assertThat(extension.isApplicationRegistered("FOO")).isTrue();
