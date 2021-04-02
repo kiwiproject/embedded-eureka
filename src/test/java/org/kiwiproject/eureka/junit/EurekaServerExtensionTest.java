@@ -85,4 +85,38 @@ class EurekaServerExtensionTest {
         }
 
     }
+
+    @Nested
+    class UtilityMethods {
+
+        @Test
+        void shouldCallCorrectMethodsOnRegistry() {
+            var extension = new EurekaServerExtension();
+            var context = mock(ExtensionContext.class);
+
+            try {
+                extension.beforeAll(context);
+
+                var server = extension.getEurekaServer();
+
+                // Verify Register and Lookup works
+                extension.registerApplication("foo", "bar", "baz", "UP");
+                assertThat(server.getRegistry().getRegisteredApplication("FOO")).isNotNull();
+                assertThat(extension.getRegisteredApplication("FOO"))
+                        .usingRecursiveComparison()
+                        .isEqualTo(server.getRegistry().getRegisteredApplication("FOO"));
+
+                // Verify get all registered works
+                assertThat(extension.getRegisteredApplications()).hasSameSizeAs(server.getRegistry().registeredApplications());
+
+                // Verify is registered works
+                assertThat(extension.isApplicationRegistered("FOO")).isTrue();
+
+                // Verify heart beat count works
+                assertThat(extension.getHeartbeatCount()).isEqualTo(server.getRegistry().getHeartbeatCount());
+            } finally {
+                extension.getEurekaServer().stop();
+            }
+        }
+    }
 }

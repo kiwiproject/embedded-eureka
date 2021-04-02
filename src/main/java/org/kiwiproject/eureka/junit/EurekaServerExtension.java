@@ -2,6 +2,7 @@ package org.kiwiproject.eureka.junit;
 
 import static java.util.Objects.nonNull;
 
+import com.netflix.discovery.shared.Application;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.kiwiproject.eureka.EmbeddedEurekaServer;
 import org.kiwiproject.eureka.EurekaTestHelpers;
+
+import java.util.List;
 
 /**
  * JUnit Jupiter extension that starts a local Eureka testing server before any test has run, and stops the server
@@ -74,6 +77,49 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
 
         // Reset static executor inside of Eureka
         EurekaTestHelpers.resetStatsMonitor();
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code clearRegisteredApps()}.
+     */
+    public void clearRegisteredApps() {
+        eurekaServer.getRegistry().clearRegisteredApps();
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s
+     * {@code registerApplication(appName, instanceId, vipAddress, status)}.
+     */
+    public void registerApplication(String appName, String instanceId, String vipAddress, String status) {
+        eurekaServer.getRegistry().registerApplication(appName, instanceId, vipAddress, status);
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code registeredApplications()}.
+     */
+    public List<Application> getRegisteredApplications() {
+        return eurekaServer.getRegistry().registeredApplications();
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code getRegisteredApplication(appId)}.
+     */
+    public Application getRegisteredApplication(String appId) {
+        return eurekaServer.getRegistry().getRegisteredApplication(appId);
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code isApplicationRegistered(appId)}.
+     */
+    public boolean isApplicationRegistered(String appId) {
+        return eurekaServer.getRegistry().isApplicationRegistered(appId);
+    }
+
+    /**
+     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code getHeartbeatCount()}.
+     */
+    public long getHeartbeatCount() {
+        return eurekaServer.getRegistry().getHeartbeatCount();
     }
 
 }
