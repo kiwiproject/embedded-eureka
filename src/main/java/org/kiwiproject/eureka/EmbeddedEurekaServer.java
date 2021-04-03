@@ -1,5 +1,6 @@
 package org.kiwiproject.eureka;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Resources;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.MyDataCenterInstanceConfig;
@@ -54,7 +55,7 @@ public class EmbeddedEurekaServer {
      * @param basePath the context path for the Jetty {@link WebAppContext}
      */
     public EmbeddedEurekaServer(String basePath) {
-        eurekaServer = new Server();
+        eurekaServer = newJettyServer();
         setupConnector();
 
         var webContext = new WebAppContext();
@@ -67,6 +68,11 @@ public class EmbeddedEurekaServer {
         configureApi(webContext);
 
         eurekaServer.setHandler(webContext);
+    }
+
+    @VisibleForTesting
+    Server newJettyServer() {
+        return new Server();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -133,6 +139,9 @@ public class EmbeddedEurekaServer {
         try {
             eurekaServer.stop();
             eurekaServer.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Interrupted while shutting down Eureka", e);
         } catch (Exception e) {
             LOG.error("Error shutting down Eureka", e);
         }
