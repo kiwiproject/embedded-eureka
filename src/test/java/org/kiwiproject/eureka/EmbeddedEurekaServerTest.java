@@ -87,7 +87,6 @@ class EmbeddedEurekaServerTest {
         embeddedEurekaServer.start();
 
         assertThatCode(embeddedEurekaServer::stop).doesNotThrowAnyException();
-        assertThat(Thread.currentThread().isInterrupted()).isFalse();
     }
 
     static class ExceptionWhenStoppingEmbeddedEurekaServer extends EmbeddedEurekaServer {
