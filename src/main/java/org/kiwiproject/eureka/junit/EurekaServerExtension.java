@@ -80,43 +80,58 @@ public class EurekaServerExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code clearRegisteredApps()}.
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s {@code clearRegisteredApps()}.
      */
     public void clearRegisteredApps() {
         eurekaServer.getRegistry().clearRegisteredApps();
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s
      * {@code registerApplication(appName, instanceId, vipAddress, status)}.
+     *
+     * @param appName    the application name
+     * @param instanceId instance ID of the application
+     * @param vipAddress the Eureka VIP address
+     * @param status     the status value, a value from {@link com.netflix.appinfo.InstanceInfo.InstanceStatus}
      */
     public void registerApplication(String appName, String instanceId, String vipAddress, String status) {
         eurekaServer.getRegistry().registerApplication(appName, instanceId, vipAddress, status);
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code registeredApplications()}.
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s {@code registeredApplications()}.
+     *
+     * @return a List of {@link Application}
      */
     public List<Application> getRegisteredApplications() {
         return eurekaServer.getRegistry().registeredApplications();
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code getRegisteredApplication(appId)}.
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s {@code getRegisteredApplication(appId)}.
+     *
+     * @param appId the application ID
+     * @return the registered {@link Application}
      */
     public Application getRegisteredApplication(String appId) {
         return eurekaServer.getRegistry().getRegisteredApplication(appId);
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code isApplicationRegistered(appId)}.
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s {@code isApplicationRegistered(appId)}.
+     *
+     * @param appId the application ID
+     * @return true if and only if there is an application registered having the given ID
      */
     public boolean isApplicationRegistered(String appId) {
         return eurekaServer.getRegistry().isApplicationRegistered(appId);
     }
 
     /**
-     * Helper method to access {@link EmbeddedEurekaServer#getRegistry()}'s {@code getHeartbeatCount()}.
+     * Helper method to access {@code EmbeddedEurekaServer#getRegistry()}'s {@code getHeartbeatCount()}.
+     *
+     * @return the number of heartbeats since the application was registered with Eureka
      */
     public long getHeartbeatCount() {
         return eurekaServer.getRegistry().getHeartbeatCount();
