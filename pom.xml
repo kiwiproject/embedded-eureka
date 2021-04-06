@@ -35,7 +35,7 @@
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
         <jetty.version>9.4.37.v20210219</jetty.version>
         <jersey.version>2.33</jersey.version>
-        <kiwi.version>0.20.0</kiwi.version>
+        <kiwi.version>0.21.0</kiwi.version>
         <servo-core.version>0.12.21</servo-core.version>
 
         <!-- Versions for provided dependencies -->
