@@ -30,21 +30,21 @@
         <archaius-core.version>0.7.6</archaius-core.version>
         <commons-configuration.version>1.10</commons-configuration.version>
         <commons-logging.version>1.2</commons-logging.version>
-        <eureka.version>1.10.11</eureka.version>
-        <httpclient.version>4.5.3</httpclient.version>
+        <eureka.version>1.10.13</eureka.version>
+        <httpclient.version>4.5.13</httpclient.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
-        <jetty.version>9.4.37.v20210219</jetty.version>
+        <jetty.version>9.4.39.v20210325</jetty.version>
         <jersey.version>2.33</jersey.version>
         <kiwi.version>0.22.0</kiwi.version>
-        <servo-core.version>0.12.21</servo-core.version>
+        <servo-core.version>0.13.2</servo-core.version>
 
         <!-- Versions for provided dependencies -->
-        <jaxb-api.version>2.3.1</jaxb-api.version>
+        <jaxb-api.version>2.3.3</jaxb-api.version>
 
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
-        <kiwi-test.version>0.17.0</kiwi-test.version>
+        <kiwi-test.version>0.18.0</kiwi-test.version>
 
         <!-- Versions for plugins -->
 
@@ -343,8 +343,8 @@
         <!-- Provided dependencies -->
 
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
             <version>${jaxb-api.version}</version>
             <scope>provided</scope>
         </dependency>
