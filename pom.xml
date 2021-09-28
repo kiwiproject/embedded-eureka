@@ -37,6 +37,7 @@
         <jersey.version>2.33</jersey.version>
         <kiwi.version>1.0.0</kiwi.version>
         <servo-core.version>0.13.2</servo-core.version>
+        <xstream.version>1.4.18</xstream.version>
 
         <!-- Versions for provided dependencies -->
         <jaxb-api.version>2.3.3</jaxb-api.version>
@@ -188,6 +189,11 @@
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
+
+                <exclusion>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                    <artifactId>xstream</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -239,6 +245,11 @@
                 <exclusion>
                     <groupId>org.glassfish.jersey.core</groupId>
                     <artifactId>jersey-client</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                    <artifactId>xstream</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -348,6 +359,12 @@
             <groupId>org.kiwiproject</groupId>
             <artifactId>kiwi</artifactId>
             <version>${kiwi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>${xstream.version}</version>
         </dependency>
 
         <!-- Provided dependencies -->
