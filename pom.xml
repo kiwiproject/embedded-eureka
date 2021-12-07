@@ -33,7 +33,7 @@
         <eureka.version>1.10.15</eureka.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jackson.version>[2.10.5,2.10.6)</jackson.version>
-        <jetty.version>9.4.43.v20210629</jetty.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
         <jersey.version>2.33</jersey.version>
         <kiwi.version>1.1.0</kiwi.version>
         <servo-core.version>0.13.2</servo-core.version>
