@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>1.5.0</version>
+        <version>1.6.0</version>
     </parent>
 
     <artifactId>embedded-eureka</artifactId>
@@ -27,6 +27,7 @@
 
     <properties>
         <!-- Versions for test dependencies -->
+        <kiwi-bom.version>0.4.0-SNAPSHOT</kiwi-bom.version>
         <kiwi-test.version>1.1.2-SNAPSHOT</kiwi-test.version>
 
         <!-- Sonar properties -->
@@ -40,7 +41,7 @@
             <dependency>
                 <groupId>org.kiwiproject</groupId>
                 <artifactId>kiwi-bom</artifactId>
-                <version>0.1.0-SNAPSHOT</version>
+                <version>${kiwi-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
