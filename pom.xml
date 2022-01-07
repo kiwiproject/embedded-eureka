@@ -27,7 +27,7 @@
 
     <properties>
         <!-- Versions for test dependencies -->
-        <kiwi-bom.version>0.5.0</kiwi-bom.version>
+        <kiwi-bom.version>0.6.0</kiwi-bom.version>
         <kiwi-test.version>1.1.2</kiwi-test.version>
 
         <!-- Sonar properties -->
