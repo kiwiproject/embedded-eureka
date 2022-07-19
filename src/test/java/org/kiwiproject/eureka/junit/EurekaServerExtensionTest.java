@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertOkResponse;
 import static org.mockito.Mockito.mock;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,7 +14,6 @@ import org.kiwiproject.net.KiwiUrls;
 
 import javax.ws.rs.client.ClientBuilder;
 
-@Slf4j
 @DisplayName("EurekaServerExtension")
 class EurekaServerExtensionTest {
 

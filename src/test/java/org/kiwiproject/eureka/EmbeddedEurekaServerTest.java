@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.kiwiproject.test.jaxrs.JaxrsTestHelper.assertOkResponse;
 
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +13,6 @@ import org.kiwiproject.net.KiwiUrls;
 
 import javax.ws.rs.client.ClientBuilder;
 
-@Slf4j
 @DisplayName("EmbeddedEurekaServer")
 class EmbeddedEurekaServerTest {
 
