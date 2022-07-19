@@ -28,7 +28,7 @@
     <properties>
         <!-- Versions for test dependencies -->
         <kiwi-bom.version>0.14.0</kiwi-bom.version>
-        <kiwi-test.version>2.1.0</kiwi-test.version>
+        <kiwi-test.version>[2.1.0,3.0.0)</kiwi-test.version>
 
         <!-- Sonar properties -->
         <sonar.projectKey>kiwiproject_embedded-eureka</sonar.projectKey>
@@ -95,7 +95,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -109,7 +109,7 @@
             <version>${kiwi-test.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
