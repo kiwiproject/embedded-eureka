@@ -1,3 +1,7 @@
+## This repository is archived
+_As of 2022-08-21, this repository is archived and no longer actively maintained_. The last release is [1.0.8](https://github.com/kiwiproject/embedded-eureka/releases/tag/v1.0.8) which contains only version updates.
+
+
 ### Embedded Eureka
 [![Build](https://github.com/kiwiproject/embedded-eureka/workflows/build/badge.svg)](https://github.com/kiwiproject/embedded-eureka/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kiwiproject_embedded-eureka&metric=alert_status)](https://sonarcloud.io/dashboard?id=kiwiproject_embedded-eureka)
