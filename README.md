@@ -20,6 +20,7 @@ This version is based off of the v2 endpoints in Eureka.
     <groupId>org.kiwiproject</groupId>
     <artifactId>embedded-eureka</artifactId>
     <version>[current-version]</version>
+    <scope>test</scope>
 </dependency>
 ```
 
